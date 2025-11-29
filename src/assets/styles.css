@@ -52,3 +52,67 @@ input:focus {
   background: #555;
 }
 
+/* Inline recipe step elements */
+.ingredient-badge {
+  transition: all 0.2s ease-in-out;
+}
+
+.ingredient-badge:hover {
+  background-color: #fef3c7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.equipment-badge {
+  transition: all 0.2s ease-in-out;
+}
+
+.equipment-badge:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timer-badge {
+  transition: all 0.2s ease-in-out;
+  animation: pulse 2s infinite;
+}
+
+.timer-badge:hover {
+  background-color: #fee2e2;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* Collapsible details styling */
+details summary {
+  user-select: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details[open] summary {
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments for badges */
+@media (max-width: 640px) {
+  .ingredient-badge,
+  .equipment-badge,
+  .timer-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+

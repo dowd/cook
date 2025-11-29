@@ -87,13 +87,63 @@
                 <span class="mr-2">📝</span>
                 Instructions
             </h2>
-            <ol class="space-y-4">
+            <ol class="space-y-6">
                 {{#each instructions}}
                 <li class="flex items-start">
                     <span class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold mr-4 mt-1">
                         {{@index}}
                     </span>
-                    <span class="text-gray-700 leading-relaxed">{{this}}</span>
+                    <div class="flex-1">
+                        <div class="text-gray-700 leading-relaxed mb-2">
+                            {{#if text}}{{text}}{{else}}{{this}}{{/if}}
+                        </div>
+                        {{#if ingredients}}
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            {{#each ingredients}}
+                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-yellow-100 text-yellow-800 text-sm font-medium ingredient-badge">
+                                <span class="mr-1">🥘</span>
+                                {{#if amount}}
+                                    {{#if unit}}
+                                        <strong>{{amount}} {{unit}}</strong>&nbsp;{{name}}
+                                    {{else}}
+                                        <strong>{{amount}}</strong>&nbsp;{{name}}
+                                    {{/if}}
+                                {{else}}
+                                    {{name}}
+                                {{/if}}
+                            </span>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+                        {{#if equipment}}
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            {{#each equipment}}
+                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-800 text-sm font-medium equipment-badge">
+                                <span class="mr-1">🔧</span>
+                                {{this}}
+                            </span>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+                        {{#if timers}}
+                        <div class="flex flex-wrap gap-2">
+                            {{#each timers}}
+                            <span class="inline-flex items-center px-3 py-1 rounded-md bg-red-100 text-red-800 text-sm font-semibold timer-badge">
+                                <span class="mr-1">⏱️</span>
+                                {{#if duration}}
+                                    {{#if unit}}
+                                        <strong>{{duration}} {{unit}}</strong>
+                                    {{else}}
+                                        <strong>{{duration}}</strong>
+                                    {{/if}}
+                                {{else}}
+                                    {{unit}}
+                                {{/if}}
+                            </span>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+                    </div>
                 </li>
                 {{/each}}
             </ol>

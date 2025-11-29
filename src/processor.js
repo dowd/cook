@@ -1,6 +1,6 @@
 import { readdir, readFile } from 'fs/promises';
 import { join, extname, basename } from 'path';
-import { parseCooklangToMarkdown } from './cooklang-parser.js';
+import { parseCooklangToMarkdown, parseCooklangToStructured } from './cooklang-parser.js';
 
 /**
  * Scans the recipes directory for .cook files
@@ -72,6 +72,81 @@ export async function convertToMarkdown(cookFilePath) {
   } catch (error) {
     throw new Error(`Failed to convert ${cookFilePath}: ${error.message}`);
   }
+}
+
+/**
+ * Converts a .cook file to structured data using JavaScript parser
+ */
+export async function convertToStructured(cookFilePath) {
+  try {
+    const cookContent = await readFile(cookFilePath, 'utf-8');
+    const structured = parseCooklangToStructured(cookContent);
+    return structured;
+  } catch (error) {
+    throw new Error(`Failed to convert ${cookFilePath}: ${error.message}`);
+  }
+}
+
+/**
+ * Parses recipe metadata and content from structured data
+ */
+export function parseRecipeFromStructured(structured, filePath, frontmatter = {}) {
+  const recipe = {
+    filename: basename(filePath, '.cook'),
+    slug: basename(filePath, '.cook').toLowerCase().replace(/\s+/g, '-'),
+    title: '',
+    tags: [],
+    categories: [],
+    servings: null,
+    prepTime: null,
+    cookTime: null,
+    ingredients: structured.ingredients || [],
+    instructions: structured.steps || [],
+    equipment: structured.equipment || []
+  };
+
+  // Apply frontmatter metadata
+  if (frontmatter.title) recipe.title = frontmatter.title;
+  if (frontmatter.tags) {
+    const tags = typeof frontmatter.tags === 'string'
+      ? frontmatter.tags.split(',').map(t => t.trim()).filter(Boolean)
+      : frontmatter.tags;
+    // Normalize tags: use a Map to deduplicate by lowercase, then capitalize for display
+    const tagMap = new Map();
+    tags.forEach(tag => {
+      const normalized = tag.toLowerCase().trim();
+      if (normalized && !tagMap.has(normalized)) {
+        // Capitalize for display (title case)
+        const capitalized = tag
+          .toLowerCase()
+          .split(/\s+/)
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        tagMap.set(normalized, capitalized);
+      }
+    });
+    recipe.tags = Array.from(tagMap.values());
+  }
+  if (frontmatter.categories || frontmatter.category) {
+    const cats = frontmatter.categories || frontmatter.category;
+    recipe.categories = typeof cats === 'string'
+      ? cats.split(',').map(c => c.trim()).filter(Boolean)
+      : cats;
+  }
+  if (frontmatter.servings) recipe.servings = parseInt(frontmatter.servings) || null;
+  if (frontmatter.prep_time || frontmatter['prep time']) {
+    recipe.prepTime = frontmatter.prep_time || frontmatter['prep time'];
+  }
+  if (frontmatter.cook_time || frontmatter['cook time']) {
+    recipe.cookTime = frontmatter.cook_time || frontmatter['cook time'];
+  }
+
+  // Use filename as title if no title found
+  if (!recipe.title) {
+    recipe.title = recipe.filename.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  return recipe;
 }
 
 /**
@@ -378,11 +453,11 @@ export async function processRecipes(recipesDir) {
       const cookContent = await readCookFile(cookFile);
       const frontmatter = cookContent ? extractFrontmatter(cookContent) : {};
 
-      // Convert to markdown
-      const markdown = await convertToMarkdown(cookFile);
+      // Convert to structured data (new approach with step-level metadata)
+      const structured = await convertToStructured(cookFile);
 
       // Parse recipe with frontmatter
-      const recipe = parseRecipe(markdown, cookFile, frontmatter);
+      const recipe = parseRecipeFromStructured(structured, cookFile, frontmatter);
       recipes.push(recipe);
     } catch (error) {
       console.error(`Error processing ${cookFile}:`, error.message);

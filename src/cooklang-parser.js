@@ -4,6 +4,174 @@
  */
 
 /**
+ * Parses a Cooklang recipe file and returns structured step data
+ * @param {string} cookContent - The raw content of the .cook file
+ * @returns {Object} Structured recipe data with steps containing ingredients, equipment, and timers
+ */
+export function parseCooklangToStructured(cookContent) {
+    // Remove frontmatter for processing
+    const frontmatterMatch = cookContent.match(/^---\n([\s\S]*?)\n---/);
+    const contentWithoutFrontmatter = frontmatterMatch
+        ? cookContent.slice(frontmatterMatch[0].length).trim()
+        : cookContent.trim();
+
+    // Extract all ingredients for the summary list
+    const allIngredients = new Map(); // ingredient name -> {amount, unit, spec}
+    const allEquipment = new Set();
+
+    // Parse all ingredients: @ingredient{amount%unit} or @ingredient{}
+    const ingredientRegex = /@([^{}]+)\{([^}]*)\}/g;
+    let match;
+    while ((match = ingredientRegex.exec(cookContent)) !== null) {
+        const ingredientName = match[1].trim();
+        const spec = match[2].trim();
+
+        // Parse amount and unit from spec (format: "amount%unit" or just description)
+        let amount = null;
+        let unit = null;
+
+        if (spec) {
+            const amountMatch = spec.match(/^([\d.-]+)%(.+)$/);
+            if (amountMatch) {
+                amount = amountMatch[1];
+                unit = amountMatch[2].trim();
+            } else if (/^\d/.test(spec)) {
+                // Just a number, treat as amount
+                amount = spec;
+            }
+        }
+
+        // Store ingredient (deduplicate by name, keeping the most detailed spec)
+        if (!allIngredients.has(ingredientName) || (amount && !allIngredients.get(ingredientName).amount)) {
+            allIngredients.set(ingredientName, { amount, unit, spec });
+        }
+    }
+
+    // Parse all equipment: #equipment{}
+    const equipmentRegex = /#([^{}]+)\{([^}]*)\}/g;
+    while ((match = equipmentRegex.exec(cookContent)) !== null) {
+        const equipmentName = match[1].trim();
+        allEquipment.add(equipmentName);
+    }
+
+    // Parse steps with their step-level data
+    const lines = contentWithoutFrontmatter.split('\n').filter(line => line.trim());
+    const steps = [];
+
+    for (const line of lines) {
+        if (!line.trim()) continue;
+
+        // Extract ingredients from this step with exact quantities
+        const stepIngredients = [];
+        const stepIngredientRegex = /@([^{}]+)\{([^}]*)\}/g;
+        let stepMatch;
+        while ((stepMatch = stepIngredientRegex.exec(line)) !== null) {
+            const ingredientName = stepMatch[1].trim();
+            const spec = stepMatch[2].trim();
+
+            let amount = null;
+            let unit = null;
+
+            if (spec) {
+                const amountMatch = spec.match(/^([\d.-]+)%(.+)$/);
+                if (amountMatch) {
+                    amount = amountMatch[1];
+                    unit = amountMatch[2].trim();
+                } else if (/^\d/.test(spec)) {
+                    amount = spec;
+                }
+            }
+
+            stepIngredients.push({
+                name: ingredientName,
+                amount: amount,
+                unit: unit,
+                spec: spec
+            });
+        }
+
+        // Extract equipment from this step
+        const stepEquipment = [];
+        const stepEquipmentRegex = /#([^{}]+)\{([^}]*)\}/g;
+        while ((stepMatch = stepEquipmentRegex.exec(line)) !== null) {
+            const equipmentName = stepMatch[1].trim();
+            stepEquipment.push(equipmentName);
+        }
+
+        // Extract timers from this step
+        const stepTimers = [];
+        const stepTimerRegex = /~\{([^}]+)\}/g;
+        while ((stepMatch = stepTimerRegex.exec(line)) !== null) {
+            const timerSpec = stepMatch[1].trim();
+            const timerMatch = timerSpec.match(/^([\d.-]+)%(.+)$/);
+            if (timerMatch) {
+                stepTimers.push({
+                    duration: timerMatch[1],
+                    unit: timerMatch[2].trim()
+                });
+            } else {
+                stepTimers.push({
+                    duration: null,
+                    unit: timerSpec
+                });
+            }
+        }
+
+        // Convert Cooklang syntax to plain text in the step
+        let stepText = line
+            // Replace ingredients: @ingredient{spec} -> "ingredient"
+            .replace(/@([^{}]+)\{([^}]*)\}/g, (match, name, spec) => {
+                return name.trim();
+            })
+            // Replace equipment: #equipment{} -> "equipment"
+            .replace(/#([^{}]+)\{([^}]*)\}/g, (match, name) => {
+                return name.trim();
+            })
+            // Replace timers: ~{time%unit} -> "time unit"
+            .replace(/~\{([^}]+)\}/g, (match, spec) => {
+                const timerMatch = spec.match(/^([\d.-]+)%(.+)$/);
+                if (timerMatch) {
+                    return `${timerMatch[1]} ${timerMatch[2].trim()}`;
+                }
+                return spec;
+            })
+            .trim();
+
+        if (stepText) {
+            steps.push({
+                text: stepText,
+                ingredients: stepIngredients,
+                equipment: stepEquipment,
+                timers: stepTimers
+            });
+        }
+    }
+
+    // Build ingredient list for summary
+    const ingredientList = [];
+    for (const [name, { amount, unit, spec }] of allIngredients.entries()) {
+        let ingredientLine = '';
+        if (amount && unit) {
+            ingredientLine = `${amount} ${unit} ${name}`;
+        } else if (amount) {
+            ingredientLine = `${amount} ${name}`;
+        } else if (spec) {
+            ingredientLine = `${name} (${spec})`;
+        } else {
+            ingredientLine = name;
+        }
+        ingredientList.push(ingredientLine);
+    }
+    ingredientList.sort();
+
+    return {
+        ingredients: ingredientList,
+        equipment: Array.from(allEquipment).sort(),
+        steps: steps
+    };
+}
+
+/**
  * Parses a Cooklang recipe file and converts it to markdown
  * @param {string} cookContent - The raw content of the .cook file
  * @returns {string} Markdown formatted recipe
