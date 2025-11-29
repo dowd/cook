@@ -3,6 +3,25 @@ import { join, dirname } from 'path';
 import { renderTemplate } from './template-engine.js';
 
 /**
+ * Capitalizes a tag for display (title case)
+ */
+function capitalizeTag(tag) {
+  if (!tag) return tag;
+  return tag
+    .toLowerCase()
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Normalizes a tag to lowercase for comparison
+ */
+function normalizeTag(tag) {
+  return tag.toLowerCase().trim();
+}
+
+/**
  * Loads a template file
  */
 async function loadTemplate(templateName) {
@@ -25,14 +44,27 @@ async function ensureDir(dirPath) {
  * Generates an individual recipe page
  */
 export async function generateRecipePage(recipe, distDir) {
-    const template = await loadTemplate('recipe');
-    const baseTemplate = await loadTemplate('base');
-
-    const recipeHtml = renderTemplate(template, recipe);
-    const fullHtml = renderTemplate(baseTemplate, {
-        title: recipe.title,
-        content: recipeHtml
-    });
+  const template = await loadTemplate('recipe');
+  const baseTemplate = await loadTemplate('base');
+  
+  // Prepare recipe data with normalized tag/category slugs for links
+  const recipeData = {
+    ...recipe,
+    tags: recipe.tags?.map(tag => ({
+      name: tag,
+      slug: slugify(normalizeTag(tag))
+    })),
+    categories: recipe.categories?.map(cat => ({
+      name: cat,
+      slug: slugify(normalizeTag(cat))
+    }))
+  };
+  
+  const recipeHtml = renderTemplate(template, recipeData);
+  const fullHtml = renderTemplate(baseTemplate, {
+    title: recipe.title,
+    content: recipeHtml
+  });
 
     const outputPath = join(distDir, 'recipe', `${recipe.slug}.html`);
     await ensureDir(dirname(outputPath));
@@ -82,30 +114,40 @@ export async function generateIndexPage(recipes, distDir) {
         return generateRecipeCard(recipe, url);
     }).join('\n');
 
-    // Collect all unique categories and tags
-    const allCategories = new Set();
-    const allTags = new Set();
+    // Collect all unique categories and tags (normalized for deduplication)
+    const categoryMap = new Map();
+    const tagMap = new Map();
     recipes.forEach(recipe => {
-        recipe.categories?.forEach(cat => allCategories.add(cat));
-        recipe.tags?.forEach(tag => allTags.add(tag));
+        recipe.categories?.forEach(cat => {
+            const normalized = normalizeTag(cat);
+            if (!categoryMap.has(normalized)) {
+                categoryMap.set(normalized, capitalizeTag(cat));
+            }
+        });
+        recipe.tags?.forEach(tag => {
+            const normalized = normalizeTag(tag);
+            if (!tagMap.has(normalized)) {
+                tagMap.set(normalized, capitalizeTag(tag));
+            }
+        });
     });
-
-    const categories = Array.from(allCategories).sort();
-    const tags = Array.from(allTags).sort();
-
-    // Generate category filter HTML
+    
+    const categories = Array.from(categoryMap.values()).sort();
+    const tags = Array.from(tagMap.values()).sort();
+    
+    // Generate category filter HTML (use normalized slugs for URLs)
     const categoryFilterHtml = `
-    ${categories.map(cat => `
-      <a href="/category/${slugify(cat)}.html" class="px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium hover:bg-green-200">
-        ${escapeHtml(cat)}
-      </a>
-    `).join('')}
-    ${tags.map(tag => `
-      <a href="/category/${slugify(tag)}.html" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium hover:bg-blue-200">
-        ${escapeHtml(tag)}
-      </a>
-    `).join('')}
-  `;
+      ${categories.map(cat => `
+        <a href="/category/${slugify(normalizeTag(cat))}.html" class="px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium hover:bg-green-200">
+          ${escapeHtml(cat)}
+        </a>
+      `).join('')}
+      ${tags.map(tag => `
+        <a href="/category/${slugify(normalizeTag(tag))}.html" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium hover:bg-blue-200">
+          ${escapeHtml(tag)}
+        </a>
+      `).join('')}
+    `;
 
     const indexHtml = renderTemplate(template, {
         recipes: recipeCards,
@@ -139,45 +181,50 @@ export async function generateIndexPage(recipes, distDir) {
 export async function generateCategoryPages(recipes, distDir) {
     const categoryMap = new Map();
 
-    // Group recipes by category and tag
+    // Group recipes by category and tag (using normalized keys)
     recipes.forEach(recipe => {
         recipe.categories?.forEach(cat => {
-            if (!categoryMap.has(cat)) {
-                categoryMap.set(cat, []);
+            const normalized = normalizeTag(cat);
+            const displayName = capitalizeTag(cat);
+            if (!categoryMap.has(normalized)) {
+                categoryMap.set(normalized, { name: displayName, recipes: [] });
             }
-            categoryMap.get(cat).push(recipe);
+            categoryMap.get(normalized).recipes.push(recipe);
         });
 
         recipe.tags?.forEach(tag => {
-            if (!categoryMap.has(tag)) {
-                categoryMap.set(tag, []);
+            const normalized = normalizeTag(tag);
+            const displayName = capitalizeTag(tag);
+            if (!categoryMap.has(normalized)) {
+                categoryMap.set(normalized, { name: displayName, recipes: [] });
             }
-            categoryMap.get(tag).push(recipe);
+            categoryMap.get(normalized).recipes.push(recipe);
         });
     });
 
     const template = await loadTemplate('category');
     const baseTemplate = await loadTemplate('base');
 
-    for (const [categoryName, categoryRecipes] of categoryMap.entries()) {
-        const recipeCards = categoryRecipes.map(recipe => {
+    for (const [normalizedKey, categoryData] of categoryMap.entries()) {
+        const recipeCards = categoryData.recipes.map(recipe => {
             const url = `/recipe/${recipe.slug}.html`;
             return generateRecipeCard(recipe, url);
         }).join('\n');
-
+        
         const categoryHtml = renderTemplate(template, {
-            categoryName: categoryName,
-            recipeCount: categoryRecipes.length,
-            multiple: categoryRecipes.length !== 1,
+            categoryName: categoryData.name,
+            recipeCount: categoryData.recipes.length,
+            multiple: categoryData.recipes.length !== 1,
             recipes: recipeCards
         });
-
+        
         const fullHtml = renderTemplate(baseTemplate, {
-            title: `${categoryName} - Recipe Collection`,
+            title: `${categoryData.name} - Recipe Collection`,
             content: categoryHtml
         });
-
-        const outputPath = join(distDir, 'category', `${slugify(categoryName)}.html`);
+        
+        // Use normalized key for slug to ensure consistent URLs
+        const outputPath = join(distDir, 'category', `${slugify(normalizedKey)}.html`);
         await ensureDir(dirname(outputPath));
         await writeFile(outputPath, fullHtml, 'utf-8');
     }

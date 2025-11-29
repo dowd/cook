@@ -27,8 +27,8 @@
             {{#if tags}}
             <div class="flex flex-wrap gap-2 mb-4">
                 {{#each tags}}
-                <a href="/category/{{this}}" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium hover:bg-blue-200">
-                    {{this}}
+                <a href="/category/{{slug}}.html" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium hover:bg-blue-200">
+                    {{name}}
                 </a>
                 {{/each}}
             </div>
@@ -37,8 +37,8 @@
             {{#if categories}}
             <div class="flex flex-wrap gap-2">
                 {{#each categories}}
-                <a href="/category/{{this}}" class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium hover:bg-green-200">
-                    {{this}}
+                <a href="/category/{{slug}}.html" class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium hover:bg-green-200">
+                    {{name}}
                 </a>
                 {{/each}}
             </div>
