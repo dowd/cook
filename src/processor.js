@@ -36,7 +36,7 @@ async function readCookFile(cookFilePath) {
  */
 function extractFrontmatter(cookContent) {
   const frontmatter = {};
-  
+
   // Check for YAML frontmatter (--- markers)
   const frontMatterMatch = cookContent.match(/^---\n([\s\S]*?)\n---/);
   if (frontMatterMatch) {
@@ -44,7 +44,7 @@ function extractFrontmatter(cookContent) {
     frontMatterText.split('\n').forEach(line => {
       const trimmed = line.trim();
       if (!trimmed) return;
-      
+
       // Match key: value (key can have spaces)
       const match = trimmed.match(/^([^:]+):\s*(.+)$/);
       if (match) {
@@ -57,7 +57,7 @@ function extractFrontmatter(cookContent) {
       }
     });
   }
-  
+
   return frontmatter;
 }
 
@@ -92,11 +92,11 @@ export function parseRecipe(markdown, filePath, frontmatter = {}) {
     equipment: [],
     rawMarkdown: markdown
   };
-  
+
   // Apply frontmatter metadata first
   if (frontmatter.title) recipe.title = frontmatter.title;
   if (frontmatter.tags) {
-    const tags = typeof frontmatter.tags === 'string' 
+    const tags = typeof frontmatter.tags === 'string'
       ? frontmatter.tags.split(',').map(t => t.trim()).filter(Boolean)
       : frontmatter.tags;
     // Normalize tags: use a Map to deduplicate by lowercase, then capitalize for display
@@ -134,14 +134,14 @@ export function parseRecipe(markdown, filePath, frontmatter = {}) {
   if (frontMatterMatch) {
     const frontMatter = frontMatterMatch[1];
     const content = markdown.slice(frontMatterMatch[0].length).trim();
-    
+
     // Parse YAML-like front matter
     frontMatter.split('\n').forEach(line => {
       const match = line.match(/^(\w+):\s*(.+)$/);
       if (match) {
         const [, key, value] = match;
         const cleanValue = value.replace(/^["']|["']$/g, '');
-        
+
         switch (key.toLowerCase()) {
           case 'title':
             recipe.title = cleanValue;
@@ -167,7 +167,7 @@ export function parseRecipe(markdown, filePath, frontmatter = {}) {
         }
       }
     });
-    
+
     // Parse content sections
     parseContent(content, recipe);
   } else {
@@ -188,10 +188,10 @@ export function parseRecipe(markdown, filePath, frontmatter = {}) {
 function parseContent(content, recipe) {
   const lines = content.split('\n');
   let currentSection = null;
-  
+
   for (const line of lines) {
     const trimmed = line.trim();
-    
+
     // Detect section headers (## Ingredients, ## Steps, etc.)
     const headerMatch = trimmed.match(/^#+\s*(ingredients?|instructions?|steps?|equipment|directions?)/i);
     if (headerMatch) {
@@ -205,10 +205,10 @@ function parseContent(content, recipe) {
       }
       continue;
     }
-    
+
     // Skip empty lines and headers
     if (!trimmed || trimmed.startsWith('#')) continue;
-    
+
     // Parse based on current section
     if (currentSection === 'ingredients') {
       if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
@@ -234,17 +234,17 @@ function parseContent(content, recipe) {
       // Skip for now, we'll process instructions after the loop
     }
   }
-  
+
   // Process instructions separately to handle multi-line steps
   // Find the instructions/steps section and process it
   let inInstructionsSection = false;
   let currentStepLines = [];
   let currentStepNumber = null;
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
-    
+
     // Detect start of instructions section
     const headerMatch = trimmed.match(/^#+\s*(instructions?|steps?|directions?)/i);
     if (headerMatch) {
@@ -260,7 +260,7 @@ function parseContent(content, recipe) {
       currentStepNumber = null;
       continue;
     }
-    
+
     // Detect end of instructions section (new section starts)
     if (inInstructionsSection && trimmed.match(/^#+\s*(ingredients?|equipment)/i)) {
       // Save last step
@@ -275,12 +275,12 @@ function parseContent(content, recipe) {
       currentStepNumber = null;
       continue;
     }
-    
+
     if (!inInstructionsSection) continue;
-    
+
     // Skip empty lines
     if (!trimmed) continue;
-    
+
     // Skip metadata lines (lines starting with [)
     if (trimmed.match(/^\[/)) {
       // End current step if we hit metadata
@@ -294,7 +294,7 @@ function parseContent(content, recipe) {
       currentStepNumber = null;
       continue;
     }
-    
+
     // Check if this is a new numbered step
     const stepMatch = trimmed.match(/^\d+[.)]\s*(.+)$/);
     if (stepMatch) {
@@ -307,7 +307,7 @@ function parseContent(content, recipe) {
       }
       // Start new step
       const stepText = stepMatch[1].trim();
-      
+
       // Skip frontmatter metadata lines (key: value format)
       // These are typically single-line metadata that CookCLI converts to steps
       if (stepText.match(/^(author|cook time|prep time|servings|course|cuisine|diet|source|tags|time required|title):\s*/i)) {
@@ -315,7 +315,7 @@ function parseContent(content, recipe) {
         currentStepLines = [];
         continue;
       }
-      
+
       if (stepText) {
         currentStepNumber = parseInt(stepMatch[0].match(/^\d+/)[0]);
         currentStepLines = [stepText];
@@ -331,7 +331,7 @@ function parseContent(content, recipe) {
       }
     }
   }
-  
+
   // Don't forget the last step
   if (inInstructionsSection && currentStepLines.length > 0) {
     const stepText = currentStepLines.join(' ').trim();
@@ -339,21 +339,21 @@ function parseContent(content, recipe) {
       recipe.instructions.push(stepText);
     }
   }
-  
+
   // If no sections found, try to infer from content
   if (recipe.ingredients.length === 0 && recipe.instructions.length === 0) {
     const listItems = lines
       .map(l => l.trim())
       .filter(l => l && (l.startsWith('-') || l.startsWith('*') || l.match(/^\d+[.)]/)));
-    
+
     // Simple heuristic: if items contain measurement words, they're ingredients
     const measurementWords = ['cup', 'tbsp', 'tsp', 'oz', 'lb', 'g', 'kg', 'ml', 'l'];
     listItems.forEach(item => {
       const cleanItem = item.replace(/^[-*\d.)]\s*/, '');
-      const hasMeasurement = measurementWords.some(word => 
+      const hasMeasurement = measurementWords.some(word =>
         cleanItem.toLowerCase().includes(word)
       );
-      
+
       if (hasMeasurement) {
         recipe.ingredients.push(cleanItem);
       } else {
@@ -369,18 +369,18 @@ function parseContent(content, recipe) {
 export async function processRecipes(recipesDir) {
   const cookFiles = await scanRecipes(recipesDir);
   const recipes = [];
-  
+
   for (const cookFile of cookFiles) {
     try {
       console.log(`Processing: ${cookFile}`);
-      
+
       // Read original .cook file to extract frontmatter
       const cookContent = await readCookFile(cookFile);
       const frontmatter = cookContent ? extractFrontmatter(cookContent) : {};
-      
+
       // Convert to markdown
       const markdown = await convertToMarkdown(cookFile);
-      
+
       // Parse recipe with frontmatter
       const recipe = parseRecipe(markdown, cookFile, frontmatter);
       recipes.push(recipe);
@@ -388,7 +388,7 @@ export async function processRecipes(recipesDir) {
       console.error(`Error processing ${cookFile}:`, error.message);
     }
   }
-  
+
   return recipes;
 }
 
