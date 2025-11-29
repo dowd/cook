@@ -8,8 +8,6 @@ import {
 import { copyFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 
 const RECIPES_DIR = join(process.cwd(), 'recipes');
 const DIST_DIR = join(process.cwd(), 'dist');
@@ -54,16 +52,6 @@ async function build() {
     console.error(`Error: Recipes directory not found: ${RECIPES_DIR}`);
     console.log('Please create a "recipes" directory and add your .cook files there.');
     process.exit(1);
-  }
-  
-  // Check if CookCLI is available
-  try {
-    const execAsync = promisify(exec);
-    await execAsync('cook --version');
-  } catch (error) {
-    console.error('Error: CookCLI is not installed or not in PATH.');
-    console.log('Please install CookCLI from https://cooklang.org/');
-    console.log('Note: You can still proceed, but recipe conversion may fail.');
   }
   
   try {

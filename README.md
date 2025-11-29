@@ -16,20 +16,12 @@ A Node.js static site generator that processes Cooklang recipe files (`.cook`) a
 ## Prerequisites
 
 1. **Node.js** (v14 or higher)
-2. **CookCLI** - Install from [cooklang.org](https://cooklang.org/)
-
-   To install CookCLI:
-   ```bash
-   # macOS (using Homebrew)
-   brew install cooklang/tap/cook
-   
-   # Or download from https://github.com/cooklang/CookCLI/releases
-   ```
 
 ## Installation
 
 1. Clone or download this repository
 2. No additional npm packages are required (uses only Node.js built-in modules)
+3. No external dependencies needed - the project includes a built-in Cooklang parser
 
 ## Usage
 
@@ -86,6 +78,7 @@ cook/
 ├── src/
 │   ├── index.js              # Main build script
 │   ├── processor.js          # Recipe processing logic
+│   ├── cooklang-parser.js    # Cooklang to Markdown parser
 │   ├── generator.js          # HTML generation
 │   ├── template-engine.js    # Simple template engine
 │   ├── templates/
@@ -155,16 +148,6 @@ Templates are located in `src/templates/`:
 
 ## Troubleshooting
 
-### CookCLI not found
-
-Make sure CookCLI is installed and available in your PATH:
-
-```bash
-cook --version
-```
-
-If this fails, install CookCLI following the instructions at [cooklang.org](https://cooklang.org/).
-
 ### No recipes found
 
 - Ensure your `.cook` files are in the `recipes/` directory
@@ -174,7 +157,7 @@ If this fails, install CookCLI following the instructions at [cooklang.org](http
 ### Build errors
 
 - Check that all recipe files are valid Cooklang format
-- Ensure CookCLI can process your recipes: `cook recipe -f markdown recipes/your-recipe.cook`
+- Verify that recipe files have proper syntax (ingredients use `@ingredient{}`, equipment uses `#equipment{}`, timers use `~{time%unit}`)
 
 ## License
 

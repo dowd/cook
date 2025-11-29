@@ -1,9 +1,6 @@
 import { readdir, readFile } from 'fs/promises';
 import { join, extname, basename } from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { parseCooklangToMarkdown } from './cooklang-parser.js';
 
 /**
  * Scans the recipes directory for .cook files
@@ -65,21 +62,15 @@ function extractFrontmatter(cookContent) {
 }
 
 /**
- * Converts a .cook file to Markdown using CookCLI
+ * Converts a .cook file to Markdown using JavaScript parser
  */
 export async function convertToMarkdown(cookFilePath) {
   try {
-    const { stdout, stderr } = await execAsync(
-      `cook recipe read "${cookFilePath}" --output-format markdown`
-    );
-    
-    if (stderr && !stderr.includes('warning')) {
-      console.warn(`CookCLI warning for ${cookFilePath}: ${stderr}`);
-    }
-    
-    return stdout;
+    const cookContent = await readFile(cookFilePath, 'utf-8');
+    const markdown = parseCooklangToMarkdown(cookContent);
+    return markdown;
   } catch (error) {
-    throw new Error(`Failed to convert ${cookFilePath} using CookCLI: ${error.message}`);
+    throw new Error(`Failed to convert ${cookFilePath}: ${error.message}`);
   }
 }
 
