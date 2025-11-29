@@ -1,0 +1,54 @@
+/* Custom styles for the recipe site */
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Recipe card hover effects */
+.recipe-card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.recipe-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Print styles */
+@media print {
+  nav, footer {
+    display: none;
+  }
+  
+  article {
+    box-shadow: none;
+    border: none;
+  }
+}
+
+/* Focus styles for accessibility */
+a:focus,
+button:focus,
+input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+

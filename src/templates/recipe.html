@@ -1,0 +1,110 @@
+<article class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="p-6 md:p-8">
+        <header class="mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{{title}}</h1>
+            
+            <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
+                {{#if servings}}
+                <span class="flex items-center">
+                    <span class="mr-1">👥</span>
+                    <span>{{servings}} servings</span>
+                </span>
+                {{/if}}
+                {{#if prepTime}}
+                <span class="flex items-center">
+                    <span class="mr-1">⏱️</span>
+                    <span>Prep: {{prepTime}}</span>
+                </span>
+                {{/if}}
+                {{#if cookTime}}
+                <span class="flex items-center">
+                    <span class="mr-1">🔥</span>
+                    <span>Cook: {{cookTime}}</span>
+                </span>
+                {{/if}}
+            </div>
+            
+            {{#if tags}}
+            <div class="flex flex-wrap gap-2 mb-4">
+                {{#each tags}}
+                <a href="/category/{{this}}" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium hover:bg-blue-200">
+                    {{this}}
+                </a>
+                {{/each}}
+            </div>
+            {{/if}}
+            
+            {{#if categories}}
+            <div class="flex flex-wrap gap-2">
+                {{#each categories}}
+                <a href="/category/{{this}}" class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium hover:bg-green-200">
+                    {{this}}
+                </a>
+                {{/each}}
+            </div>
+            {{/if}}
+        </header>
+        
+        <div class="grid md:grid-cols-2 gap-8">
+            {{#if ingredients}}
+            <section class="mb-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <span class="mr-2">🥘</span>
+                    Ingredients
+                </h2>
+                <ul class="space-y-2">
+                    {{#each ingredients}}
+                    <li class="flex items-start">
+                        <span class="text-gray-400 mr-2">•</span>
+                        <span class="text-gray-700">{{this}}</span>
+                    </li>
+                    {{/each}}
+                </ul>
+            </section>
+            {{/if}}
+            
+            {{#if equipment}}
+            <section class="mb-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <span class="mr-2">🔧</span>
+                    Equipment
+                </h2>
+                <ul class="space-y-2">
+                    {{#each equipment}}
+                    <li class="flex items-start">
+                        <span class="text-gray-400 mr-2">•</span>
+                        <span class="text-gray-700">{{this}}</span>
+                    </li>
+                    {{/each}}
+                </ul>
+            </section>
+            {{/if}}
+        </div>
+        
+        {{#if instructions}}
+        <section class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
+                <span class="mr-2">📝</span>
+                Instructions
+            </h2>
+            <ol class="space-y-4">
+                {{#each instructions}}
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold mr-4 mt-1">
+                        {{@index}}
+                    </span>
+                    <span class="text-gray-700 leading-relaxed">{{this}}</span>
+                </li>
+                {{/each}}
+            </ol>
+        </section>
+        {{/if}}
+        
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <a href="/" class="text-blue-600 hover:text-blue-800 font-medium">
+                ← Back to all recipes
+            </a>
+        </div>
+    </div>
+</article>
+

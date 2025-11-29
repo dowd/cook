@@ -1,0 +1,31 @@
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Recipe Collection</h1>
+    <p class="text-gray-600 mb-6">Discover delicious recipes from your Cooklang collection</p>
+    
+    <div class="mb-6">
+        <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search recipes..." 
+            class="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+    </div>
+    
+    <div id="categoryFilter" class="mb-6 flex flex-wrap gap-2">
+        <!-- Categories will be populated by JavaScript -->
+    </div>
+</div>
+
+<div id="recipeGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {{&recipes}}
+</div>
+
+<div id="noResults" class="hidden text-center py-12">
+    <p class="text-gray-500 text-lg">No recipes found matching your search.</p>
+</div>
+
+<script>
+    // Recipe data will be injected here
+    window.recipeData = {{&recipeData}};
+</script>
+

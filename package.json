@@ -1,0 +1,19 @@
+{
+  "name": "cooklang-static-site-generator",
+  "version": "1.0.0",
+  "description": "A static site generator for Cooklang recipes",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "keywords": [
+    "cooklang",
+    "static-site-generator",
+    "recipes"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

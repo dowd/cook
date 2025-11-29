@@ -1,0 +1,12 @@
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-2">{{categoryName}}</h1>
+    <p class="text-gray-600 mb-6">{{recipeCount}} recipe{{#if multiple}}s{{/if}} in this category</p>
+    <a href="/" class="text-blue-600 hover:text-blue-800 font-medium">
+        ← Back to all recipes
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {{&recipes}}
+</div>
+
