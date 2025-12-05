@@ -23,11 +23,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create backend directory structure per implementation plan (backend/src/handlers/, backend/src/lib/, backend/src/utils/, backend/tests/unit/, backend/tests/integration/)
-- [ ] T002 Initialize backend Node.js project with package.json in backend/package.json
-- [ ] T003 [P] Install backend dependencies (@aws-sdk/client-s3, jsonwebtoken, nanoid, busboy) in backend/package.json
-- [ ] T004 [P] Create SAM template skeleton in backend/template.yaml with basic structure (AWSTemplateFormatVersion, Transform, Parameters, Resources, Outputs)
-- [ ] T005 [P] Create .gitignore entries for backend/ (.aws-sam/, node_modules/, .env)
+- [x] T001 Create backend directory structure per implementation plan (backend/src/handlers/, backend/src/lib/, backend/src/utils/, backend/tests/unit/, backend/tests/integration/)
+- [x] T002 Initialize backend Node.js project with package.json in backend/package.json
+- [x] T003 [P] Install backend dependencies (@aws-sdk/client-s3, jsonwebtoken, nanoid, busboy) in backend/package.json
+- [x] T004 [P] Create SAM template skeleton in backend/template.yaml with basic structure (AWSTemplateFormatVersion, Transform, Parameters, Resources, Outputs)
+- [x] T005 [P] Create .gitignore entries for backend/ (.aws-sam/, node_modules/, .env)
 
 ---
 
@@ -37,16 +37,16 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 [P] Implement JWT validation utility in backend/src/lib/auth.js (validate Cognito JWT tokens, fetch JWKS, cache keys)
-- [ ] T007 [P] Implement S3 client utility in backend/src/lib/s3-client.js (S3 operations wrapper, get/put/list/delete with versioning support)
-- [ ] T008 [P] Implement ID generator utility in backend/src/lib/id-generator.js (nanoid with custom alphabet, 8-character alphanumeric IDs)
-- [ ] T009 [P] Implement recipe parser utility in backend/src/lib/recipe-parser.js (extract title from frontmatter >> title: field, fallback to filename)
-- [ ] T010 [P] Implement error handling utilities in backend/src/utils/errors.js (error response formatting, HTTP status code mapping)
-- [ ] T011 [P] Implement input validation utilities in backend/src/utils/validation.js (recipe ID format validation, content size validation, file extension validation)
-- [ ] T012 Configure SAM template parameters in backend/template.yaml (AllowedOrigin, CognitoUserPoolId, CognitoAppClientId, S3BucketName)
-- [ ] T013 Define S3 bucket resource in backend/template.yaml with versioning enabled
-- [ ] T014 Define API Gateway REST API resource in backend/template.yaml with CORS configuration
-- [ ] T015 Configure API Gateway throttling in backend/template.yaml (rate limiting per IP address)
+- [x] T006 [P] Implement JWT validation utility in backend/src/lib/auth.js (validate Cognito JWT tokens, fetch JWKS, cache keys)
+- [x] T007 [P] Implement S3 client utility in backend/src/lib/s3-client.js (S3 operations wrapper, get/put/list/delete with versioning support)
+- [x] T008 [P] Implement ID generator utility in backend/src/lib/id-generator.js (nanoid with custom alphabet, 8-character alphanumeric IDs)
+- [x] T009 [P] Implement recipe parser utility in backend/src/lib/recipe-parser.js (extract title from frontmatter >> title: field, fallback to filename)
+- [x] T010 [P] Implement error handling utilities in backend/src/utils/errors.js (error response formatting, HTTP status code mapping)
+- [x] T011 [P] Implement input validation utilities in backend/src/utils/validation.js (recipe ID format validation, content size validation, file extension validation)
+- [x] T012 Configure SAM template parameters in backend/template.yaml (AllowedOrigin, CognitoUserPoolId, CognitoAppClientId, S3BucketName)
+- [x] T013 Define S3 bucket resource in backend/template.yaml with versioning enabled
+- [x] T014 Define API Gateway REST API resource in backend/template.yaml with CORS configuration
+- [x] T015 Configure API Gateway throttling in backend/template.yaml (rate limiting per IP address)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -60,14 +60,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Implement GET /recipes handler in backend/src/handlers/get-recipes.js (list all recipes from S3, retrieve tags for metadata, return JSON array)
-- [ ] T017 [P] [US1] Implement GET /recipes/{id} handler in backend/src/handlers/get-recipe.js (retrieve single recipe from S3 by ID, return Cooklang content)
-- [ ] T018 [US1] Add error handling for 404 Not Found in backend/src/handlers/get-recipe.js (recipe not found)
-- [ ] T019 [US1] Add error handling for 400 Bad Request in backend/src/handlers/get-recipe.js (invalid recipe ID format)
-- [ ] T020 [US1] Add error handling for 503 Service Unavailable in backend/src/handlers/get-recipes.js and backend/src/handlers/get-recipe.js (S3 unavailable)
-- [ ] T021 [US1] Configure GET /recipes route in backend/template.yaml (API Gateway integration, no authentication required)
-- [ ] T022 [US1] Configure GET /recipes/{id} route in backend/template.yaml (API Gateway integration, no authentication required)
-- [ ] T023 [US1] Create Lambda function resources in backend/template.yaml (GetRecipesFunction, GetRecipeFunction with S3 read permissions)
+- [x] T016 [P] [US1] Implement GET /recipes handler in backend/src/handlers/get-recipes.js (list all recipes from S3, retrieve tags for metadata, return JSON array)
+- [x] T017 [P] [US1] Implement GET /recipes/{id} handler in backend/src/handlers/get-recipe.js (retrieve single recipe from S3 by ID, return Cooklang content)
+- [x] T018 [US1] Add error handling for 404 Not Found in backend/src/handlers/get-recipe.js (recipe not found)
+- [x] T019 [US1] Add error handling for 400 Bad Request in backend/src/handlers/get-recipe.js (invalid recipe ID format)
+- [x] T020 [US1] Add error handling for 503 Service Unavailable in backend/src/handlers/get-recipes.js and backend/src/handlers/get-recipe.js (S3 unavailable)
+- [x] T021 [US1] Configure GET /recipes route in backend/template.yaml (API Gateway integration, no authentication required)
+- [x] T022 [US1] Configure GET /recipes/{id} route in backend/template.yaml (API Gateway integration, no authentication required)
+- [x] T023 [US1] Create Lambda function resources in backend/template.yaml (GetRecipesFunction, GetRecipeFunction with S3 read permissions)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Users can list and view recipes without authentication.
 
@@ -81,17 +81,17 @@
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement JWT authentication middleware in backend/src/lib/auth.js (extract token from Authorization header, validate token for write operations)
-- [ ] T025 [P] [US2] Implement POST /recipes handler for text content in backend/src/handlers/create-recipe.js (accept JSON with title and content, validate input, generate ID, store in S3)
-- [ ] T026 [US2] Implement multipart file upload parsing in backend/src/handlers/create-recipe.js (use busboy to parse multipart/form-data, extract .cook file)
-- [ ] T027 [US2] Implement title extraction logic in backend/src/handlers/create-recipe.js (use recipe-parser.js to extract title from frontmatter or filename)
-- [ ] T028 [US2] Implement S3 object tagging in backend/src/handlers/create-recipe.js (store title, createdAt, lastModified, recipeId as S3 tags)
-- [ ] T029 [US2] Add input validation in backend/src/handlers/create-recipe.js (validate required fields, file extension, content size limit 1MB)
-- [ ] T030 [US2] Add error handling for 400 Bad Request in backend/src/handlers/create-recipe.js (missing fields, invalid file format, oversized content)
-- [ ] T031 [US2] Add error handling for 401 Unauthorized in backend/src/handlers/create-recipe.js (missing or invalid JWT token)
-- [ ] T032 [US2] Configure POST /recipes route in backend/template.yaml (API Gateway integration, Lambda authorizer for authentication)
-- [ ] T033 [US2] Create Lambda function resource in backend/template.yaml (CreateRecipeFunction with S3 write permissions and Cognito access)
-- [ ] T034 [US2] Configure Lambda authorizer in backend/template.yaml (Cognito JWT authorizer for write operations)
+- [x] T024 [US2] Implement JWT authentication middleware in backend/src/lib/auth.js (extract token from Authorization header, validate token for write operations)
+- [x] T025 [P] [US2] Implement POST /recipes handler for text content in backend/src/handlers/create-recipe.js (accept JSON with title and content, validate input, generate ID, store in S3)
+- [x] T026 [US2] Implement multipart file upload parsing in backend/src/handlers/create-recipe.js (use busboy to parse multipart/form-data, extract .cook file)
+- [x] T027 [US2] Implement title extraction logic in backend/src/handlers/create-recipe.js (use recipe-parser.js to extract title from frontmatter or filename)
+- [x] T028 [US2] Implement S3 object tagging in backend/src/handlers/create-recipe.js (store title, createdAt, lastModified, recipeId as S3 tags)
+- [x] T029 [US2] Add input validation in backend/src/handlers/create-recipe.js (validate required fields, file extension, content size limit 1MB)
+- [x] T030 [US2] Add error handling for 400 Bad Request in backend/src/handlers/create-recipe.js (missing fields, invalid file format, oversized content)
+- [x] T031 [US2] Add error handling for 401 Unauthorized in backend/src/handlers/create-recipe.js (missing or invalid JWT token)
+- [x] T032 [US2] Configure POST /recipes route in backend/template.yaml (API Gateway integration, Lambda authorizer for authentication)
+- [x] T033 [US2] Create Lambda function resource in backend/template.yaml (CreateRecipeFunction with S3 write permissions and Cognito access)
+- [x] T034 [US2] Configure Lambda authorizer in backend/template.yaml (Cognito JWT authorizer for write operations)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. Authenticated users can create recipes via text or file upload.
 
@@ -105,14 +105,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T035 [P] [US3] Implement PUT /recipes/{id} handler in backend/src/handlers/update-recipe.js (validate recipe ID, authenticate user, update S3 object, preserve version)
-- [ ] T036 [US3] Implement S3 versioning preservation in backend/src/handlers/update-recipe.js (use PutObject which automatically creates new version)
-- [ ] T037 [US3] Update S3 object tags in backend/src/handlers/update-recipe.js (update lastModified timestamp, preserve other tags)
-- [ ] T038 [US3] Add input validation in backend/src/handlers/update-recipe.js (validate recipe ID format, content size limit 1MB)
-- [ ] T039 [US3] Add error handling for 404 Not Found in backend/src/handlers/update-recipe.js (recipe does not exist)
-- [ ] T040 [US3] Add error handling for 401 Unauthorized in backend/src/handlers/update-recipe.js (missing or invalid JWT token)
-- [ ] T041 [US3] Configure PUT /recipes/{id} route in backend/template.yaml (API Gateway integration, Lambda authorizer for authentication)
-- [ ] T042 [US3] Create Lambda function resource in backend/template.yaml (UpdateRecipeFunction with S3 write permissions and Cognito access)
+- [x] T035 [P] [US3] Implement PUT /recipes/{id} handler in backend/src/handlers/update-recipe.js (validate recipe ID, authenticate user, update S3 object, preserve version)
+- [x] T036 [US3] Implement S3 versioning preservation in backend/src/handlers/update-recipe.js (use PutObject which automatically creates new version)
+- [x] T037 [US3] Update S3 object tags in backend/src/handlers/update-recipe.js (update lastModified timestamp, preserve other tags)
+- [x] T038 [US3] Add input validation in backend/src/handlers/update-recipe.js (validate recipe ID format, content size limit 1MB)
+- [x] T039 [US3] Add error handling for 404 Not Found in backend/src/handlers/update-recipe.js (recipe does not exist)
+- [x] T040 [US3] Add error handling for 401 Unauthorized in backend/src/handlers/update-recipe.js (missing or invalid JWT token)
+- [x] T041 [US3] Configure PUT /recipes/{id} route in backend/template.yaml (API Gateway integration, Lambda authorizer for authentication)
+- [x] T042 [US3] Create Lambda function resource in backend/template.yaml (UpdateRecipeFunction with S3 write permissions and Cognito access)
 
 **Checkpoint**: At this point, User Stories 1, 2, AND 3 should all work independently. Users can view, create, and update recipes.
 
@@ -126,12 +126,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T043 [P] [US4] Implement DELETE /recipes/{id} handler in backend/src/handlers/delete-recipe.js (validate recipe ID, authenticate user, delete S3 object)
-- [ ] T044 [US4] Add input validation in backend/src/handlers/delete-recipe.js (validate recipe ID format)
-- [ ] T045 [US4] Add error handling for 404 Not Found in backend/src/handlers/delete-recipe.js (recipe does not exist)
-- [ ] T046 [US4] Add error handling for 401 Unauthorized in backend/src/handlers/delete-recipe.js (missing or invalid JWT token)
-- [ ] T047 [US4] Configure DELETE /recipes/{id} route in backend/template.yaml (API Gateway integration, Lambda authorizer for authentication)
-- [ ] T048 [US4] Create Lambda function resource in backend/template.yaml (DeleteRecipeFunction with S3 delete permissions and Cognito access)
+- [x] T043 [P] [US4] Implement DELETE /recipes/{id} handler in backend/src/handlers/delete-recipe.js (validate recipe ID, authenticate user, delete S3 object)
+- [x] T044 [US4] Add input validation in backend/src/handlers/delete-recipe.js (validate recipe ID format)
+- [x] T045 [US4] Add error handling for 404 Not Found in backend/src/handlers/delete-recipe.js (recipe does not exist)
+- [x] T046 [US4] Add error handling for 401 Unauthorized in backend/src/handlers/delete-recipe.js (missing or invalid JWT token)
+- [x] T047 [US4] Configure DELETE /recipes/{id} route in backend/template.yaml (API Gateway integration, Lambda authorizer for authentication)
+- [x] T048 [US4] Create Lambda function resource in backend/template.yaml (DeleteRecipeFunction with S3 delete permissions and Cognito access)
 
 **Checkpoint**: All user stories should now be independently functional. Complete CRUD operations available.
 
@@ -141,18 +141,18 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T049 [P] Add error logging to all handlers in backend/src/handlers/ (use console.error with structured JSON format for CloudWatch)
-- [ ] T050 [P] Add rate limiting error handling (429 Too Many Requests) to all handlers in backend/src/handlers/
-- [ ] T051 Complete SAM template outputs in backend/template.yaml (API Gateway URL, S3 bucket name, Cognito User Pool ID)
-- [ ] T052 Add environment variables to Lambda functions in backend/template.yaml (S3_BUCKET_NAME, COGNITO_USER_POOL_ID, COGNITO_APP_CLIENT_ID)
-- [ ] T053 Configure IAM roles and policies in backend/template.yaml (S3 read/write/delete permissions, CloudWatch Logs permissions)
-- [ ] T054 Add SAM template metadata and descriptions in backend/template.yaml
-- [ ] T055 Create samconfig.toml in backend/ with deployment configuration
-- [ ] T056 Create README.md in backend/ with setup and deployment instructions
-- [ ] T057 Validate quickstart.md deployment steps work correctly
-- [ ] T058 [P] Code cleanup and refactoring (extract common patterns, improve error messages)
-- [ ] T059 [P] Add input sanitization for recipe IDs and content in backend/src/utils/validation.js
-- [ ] T060 Verify all endpoints return correct HTTP status codes per OpenAPI specification
+- [x] T049 [P] Add error logging to all handlers in backend/src/handlers/ (use console.error with structured JSON format for CloudWatch)
+- [x] T050 [P] Add rate limiting error handling (429 Too Many Requests) to all handlers in backend/src/handlers/
+- [x] T051 Complete SAM template outputs in backend/template.yaml (API Gateway URL, S3 bucket name, Cognito User Pool ID)
+- [x] T052 Add environment variables to Lambda functions in backend/template.yaml (S3_BUCKET_NAME, COGNITO_USER_POOL_ID, COGNITO_APP_CLIENT_ID)
+- [x] T053 Configure IAM roles and policies in backend/template.yaml (S3 read/write/delete permissions, CloudWatch Logs permissions)
+- [x] T054 Add SAM template metadata and descriptions in backend/template.yaml
+- [x] T055 Create samconfig.toml in backend/ with deployment configuration
+- [x] T056 Create README.md in backend/ with setup and deployment instructions
+- [x] T057 Validate quickstart.md deployment steps work correctly
+- [x] T058 [P] Code cleanup and refactoring (extract common patterns, improve error messages)
+- [x] T059 [P] Add input sanitization for recipe IDs and content in backend/src/utils/validation.js
+- [x] T060 Verify all endpoints return correct HTTP status codes per OpenAPI specification
 
 ---
 

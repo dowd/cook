@@ -1,0 +1,26 @@
+{
+  "name": "cooklang-backend",
+  "version": "1.0.0",
+  "description": "Serverless backend API for Cooklang recipe site",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test tests/unit/**/*.test.js",
+    "test:integration": "node --test tests/integration/**/*.test.js"
+  },
+  "keywords": [
+    "cooklang",
+    "serverless",
+    "aws",
+    "lambda"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.490.0",
+    "busboy": "^1.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.2.0",
+    "nanoid": "^5.0.4"
+  }
+}

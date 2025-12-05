@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless backend API for Cooklang recipe site
+
+Parameters:
+  AllowedOrigin:
+    Type: String
+    Default: "*"
+    Description: CORS allowed origin (use * for development, specific domain for production)
+  
+  CognitoUserPoolId:
+    Type: String
+    Description: AWS Cognito User Pool ID
+  
+  CognitoAppClientId:
+    Type: String
+    Description: Cognito App Client ID
+  
+  S3BucketName:
+    Type: String
+    Description: S3 bucket name for storing recipes
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        S3_BUCKET_NAME: !Ref S3BucketName
+        COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+        COGNITO_APP_CLIENT_ID: !Ref CognitoAppClientId
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
+        AWS_REGION: !Ref AWS::Region
+
+Resources:
+  RecipesApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: cooklang-recipes-api
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: !Sub "'${AllowedOrigin}'"
+        AllowCredentials: false
+      Throttle:
+        BurstLimit: 100
+        RateLimit: 50
+
+  RecipesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3BucketName
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  GetRecipesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: get-recipes.handler
+      Events:
+        GetRecipes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes
+            Method: GET
+            Auth:
+              Authorizer: NONE
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref S3BucketName
+
+  GetRecipeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/get-recipe.handler
+      Events:
+        GetRecipe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes/{recipeId}
+            Method: GET
+            Auth:
+              Authorizer: NONE
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref S3BucketName
+
+  CreateRecipeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/create-recipe.handler
+      Events:
+        CreateRecipe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes
+            Method: POST
+            Auth:
+              Authorizer: NONE
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref S3BucketName
+      Environment:
+        Variables:
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+
+  UpdateRecipeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/update-recipe.handler
+      Events:
+        UpdateRecipe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes/{recipeId}
+            Method: PUT
+            Auth:
+              Authorizer: NONE
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref S3BucketName
+      Environment:
+        Variables:
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+
+  DeleteRecipeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/delete-recipe.handler
+      Events:
+        DeleteRecipe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes/{recipeId}
+            Method: DELETE
+            Auth:
+              Authorizer: NONE
+      Policies:
+        - S3DeletePolicy:
+            BucketName: !Ref S3BucketName
+      Environment:
+        Variables:
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${RecipesApi}.execute-api.${AWS::Region}.amazonaws.com/${RecipesApi.Stage}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiUrl'
+  
+  S3BucketName:
+    Description: S3 bucket name for recipes
+    Value: !Ref S3BucketName
+    Export:
+      Name: !Sub '${AWS::StackName}-S3BucketName'
+  
+  CognitoUserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref CognitoUserPoolId
+    Export:
+      Name: !Sub '${AWS::StackName}-CognitoUserPoolId'

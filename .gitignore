@@ -3,3 +3,9 @@ dist/
 .DS_Store
 *.log
 
+# Backend (AWS SAM)
+backend/.aws-sam/
+backend/node_modules/
+backend/.env
+backend/.env.local
+backend/samconfig.toml.local
