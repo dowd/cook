@@ -1,0 +1,29 @@
+# cook Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-12-05
+
+## Active Technologies
+
+- Node.js 18.x or higher (AWS Lambda runtime) + AWS SDK v3 (`@aws-sdk/client-s3`, `@aws-sdk/client-cognito-identity-provider`), JWT verification library (e.g., `jsonwebtoken` or `jose`) (001-serverless-backend)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+# Add commands for Node.js 18.x or higher (AWS Lambda runtime)
+
+## Code Style
+
+Node.js 18.x or higher (AWS Lambda runtime): Follow standard conventions
+
+## Recent Changes
+
+- 001-serverless-backend: Added Node.js 18.x or higher (AWS Lambda runtime) + AWS SDK v3 (`@aws-sdk/client-s3`, `@aws-sdk/client-cognito-identity-provider`), JWT verification library (e.g., `jsonwebtoken` or `jose`)
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
