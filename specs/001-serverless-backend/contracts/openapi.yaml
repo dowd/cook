@@ -1,0 +1,442 @@
+openapi: 3.0.3
+info:
+  title: Cooklang Recipe API
+  description: Serverless backend API for managing Cooklang recipes
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com/{stage}
+    description: AWS API Gateway endpoint
+    variables:
+      apiId:
+        default: your-api-id
+      region:
+        default: us-east-1
+      stage:
+        default: prod
+
+paths:
+  /recipes:
+    get:
+      summary: List all recipes
+      description: Returns a list of all recipes with basic metadata (ID and title). Public endpoint, no authentication required.
+      operationId: listRecipes
+      tags:
+        - Recipes
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecipeSummary'
+              example:
+                - id: abc12345
+                  title: Chocolate Chip Cookies
+                  lastModified: 2025-01-27T10:30:00Z
+                - id: xyz98765
+                  title: Pasta Carbonara
+                  lastModified: 2025-01-26T15:20:00Z
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+    post:
+      summary: Create a new recipe
+      description: Creates a new recipe. Accepts either text content with title, or a .cook file upload. Requires authentication.
+      operationId: createRecipe
+      tags:
+        - Recipes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecipeRequest'
+            example:
+              title: Chocolate Chip Cookies
+              content: |
+                >> title: Chocolate Chip Cookies
+                >> servings: 24
+                
+                Preheat the @oven{} to 350°F.
+                
+                Mix @flour{250%g}, @baking soda{5%g}, and @salt{5%g} in a bowl.
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadRecipeRequest'
+      responses:
+        '201':
+          description: Recipe created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRecipeResponse'
+              example:
+                id: abc12345
+                message: Recipe created successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /recipes/{recipeId}:
+    get:
+      summary: Get a recipe by ID
+      description: Returns the full Cooklang content of a specific recipe. Public endpoint, no authentication required.
+      operationId: getRecipe
+      tags:
+        - Recipes
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          description: Recipe identifier (8-character alphanumeric)
+          schema:
+            type: string
+            pattern: '^[a-z0-9]{8}$'
+            example: abc12345
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                >> title: Chocolate Chip Cookies
+                >> servings: 24
+                
+                Preheat the @oven{} to 350°F.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+    put:
+      summary: Update a recipe
+      description: Updates an existing recipe with new Cooklang content. Requires authentication.
+      operationId: updateRecipe
+      tags:
+        - Recipes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          description: Recipe identifier (8-character alphanumeric)
+          schema:
+            type: string
+            pattern: '^[a-z0-9]{8}$'
+            example: abc12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRecipeRequest'
+            example:
+              content: |
+                >> title: Chocolate Chip Cookies (Updated)
+                >> servings: 24
+                
+                Preheat the @oven{} to 350°F.
+      responses:
+        '200':
+          description: Recipe updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateRecipeResponse'
+              example:
+                id: abc12345
+                message: Recipe updated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete a recipe
+      description: Deletes a recipe from the system. Requires authentication.
+      operationId: deleteRecipe
+      tags:
+        - Recipes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          description: Recipe identifier (8-character alphanumeric)
+          schema:
+            type: string
+            pattern: '^[a-z0-9]{8}$'
+            example: abc12345
+      responses:
+        '200':
+          description: Recipe deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteRecipeResponse'
+              example:
+                id: abc12345
+                message: Recipe deleted successfully
+        '204':
+          description: Recipe deleted successfully (no content)
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: AWS Cognito JWT token
+
+  schemas:
+    RecipeSummary:
+      type: object
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z0-9]{8}$'
+          description: Recipe identifier (8-character alphanumeric)
+          example: abc12345
+        title:
+          type: string
+          maxLength: 200
+          description: Recipe title
+          example: Chocolate Chip Cookies
+        lastModified:
+          type: string
+          format: date-time
+          description: Last modification timestamp (ISO 8601)
+          example: 2025-01-27T10:30:00Z
+
+    CreateRecipeRequest:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          description: Recipe title
+          example: Chocolate Chip Cookies
+        content:
+          type: string
+          maxLength: 1048576
+          description: Cooklang recipe content (max 1MB)
+          example: |
+            >> title: Chocolate Chip Cookies
+            >> servings: 24
+            
+            Preheat the @oven{} to 350°F.
+
+    UploadRecipeRequest:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: .cook file to upload (max 1MB)
+
+    UpdateRecipeRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          maxLength: 1048576
+          description: Updated Cooklang recipe content (max 1MB)
+          example: |
+            >> title: Chocolate Chip Cookies (Updated)
+            >> servings: 24
+            
+            Preheat the @oven{} to 350°F.
+
+    CreateRecipeResponse:
+      type: object
+      required:
+        - id
+        - message
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z0-9]{8}$'
+          description: Created recipe identifier
+          example: abc12345
+        message:
+          type: string
+          example: Recipe created successfully
+
+    UpdateRecipeResponse:
+      type: object
+      required:
+        - id
+        - message
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z0-9]{8}$'
+          description: Updated recipe identifier
+          example: abc12345
+        message:
+          type: string
+          example: Recipe updated successfully
+
+    DeleteRecipeResponse:
+      type: object
+      required:
+        - id
+        - message
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z0-9]{8}$'
+          description: Deleted recipe identifier
+          example: abc12345
+        message:
+          type: string
+          example: Recipe deleted successfully
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: ValidationError
+        message:
+          type: string
+          description: Human-readable error message
+          example: Invalid recipe ID format
+
+  responses:
+    BadRequest:
+      description: Bad request (invalid input)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: ValidationError
+            message: Invalid recipe ID format
+
+    Unauthorized:
+      description: Unauthorized (missing or invalid JWT token)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Unauthorized
+            message: Missing or invalid authentication token
+
+    NotFound:
+      description: Recipe not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: NotFound
+            message: Recipe not found
+
+    PayloadTooLarge:
+      description: Request payload too large
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: PayloadTooLarge
+            message: Recipe content exceeds maximum size of 1MB
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            description: Seconds to wait before retrying
+          example: 60
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: TooManyRequests
+            message: Rate limit exceeded. Please try again later.
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: InternalServerError
+            message: An unexpected error occurred
+
+    ServiceUnavailable:
+      description: Service temporarily unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: ServiceUnavailable
+            message: Service temporarily unavailable. Please try again later.
+
+
+
