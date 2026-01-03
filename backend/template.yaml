@@ -1,0 +1,188 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless backend API for Cooklang recipes
+
+Parameters:
+  AllowedOrigin:
+    Type: String
+    Default: '*'
+    Description: CORS allowed origin (use * for development, specific domain for production)
+  
+  CognitoUserPoolId:
+    Type: String
+    Description: Existing Cognito User Pool ID (e.g., us-east-1_XXXXXXXXX)
+  
+  CognitoAppClientId:
+    Type: String
+    Description: Cognito App Client ID
+  
+  S3BucketName:
+    Type: String
+    Default: ''
+    Description: Optional custom S3 bucket name (leave empty for auto-generated name)
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        S3_BUCKET_NAME: !Ref RecipesBucket
+        COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+        COGNITO_REGION: !Ref AWS::Region
+        AWS_REGION: !Ref AWS::Region
+
+Resources:
+  # S3 Bucket for recipe storage
+  RecipesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !If
+        - HasCustomBucketName
+        - !Ref S3BucketName
+        - !Sub '${AWS::StackName}-recipes-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 90
+
+  # API Gateway REST API
+  RecipesApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-api'
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: !Sub "'${AllowedOrigin}'"
+        MaxAge: "'600'"
+
+  # Lambda function: GET /recipes
+  GetRecipesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-recipes.handler
+      CodeUri: ./
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref RecipesBucket
+      Events:
+        GetRecipes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes
+            Method: get
+
+  # Lambda function: GET /recipes/{id}
+  GetRecipeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-recipe.handler
+      CodeUri: ./
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref RecipesBucket
+      Events:
+        GetRecipe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes/{recipeId}
+            Method: get
+
+  # Lambda function: POST /recipes
+  CreateRecipeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/create-recipe.handler
+      CodeUri: ./
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref RecipesBucket
+        - S3ReadPolicy:
+            BucketName: !Ref RecipesBucket
+      Events:
+        CreateRecipe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes
+            Method: post
+
+  # Lambda function: PUT /recipes/{id}
+  UpdateRecipeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/update-recipe.handler
+      CodeUri: ./
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref RecipesBucket
+        - S3ReadPolicy:
+            BucketName: !Ref RecipesBucket
+      Events:
+        UpdateRecipe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes/{recipeId}
+            Method: put
+
+  # Lambda function: DELETE /recipes/{id}
+  DeleteRecipeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/delete-recipe.handler
+      CodeUri: ./
+      Policies:
+        - S3DeletePolicy:
+            BucketName: !Ref RecipesBucket
+        - S3ReadPolicy:
+            BucketName: !Ref RecipesBucket
+      Events:
+        DeleteRecipe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipesApi
+            Path: /recipes/{recipeId}
+            Method: delete
+
+Conditions:
+  HasCustomBucketName: !Not [!Equals [!Ref S3BucketName, '']]
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${RecipesApi}.execute-api.${AWS::Region}.amazonaws.com/Prod'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiUrl'
+  
+  RecipesBucketName:
+    Description: S3 bucket name for recipes
+    Value: !Ref RecipesBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-RecipesBucket'
+  
+  GetRecipesFunctionArn:
+    Description: ARN of GetRecipes Lambda function
+    Value: !GetAtt GetRecipesFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-GetRecipesFunctionArn'
+  
+  CreateRecipeFunctionArn:
+    Description: ARN of CreateRecipe Lambda function
+    Value: !GetAtt CreateRecipeFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-CreateRecipeFunctionArn'
+

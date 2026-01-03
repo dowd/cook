@@ -1,0 +1,46 @@
+{
+  "name": "cooklang-serverless-backend",
+  "version": "1.0.0",
+  "description": "Serverless backend API for Cooklang recipes",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "build": "sam build",
+    "deploy": "sam deploy",
+    "deploy:guided": "sam deploy --guided"
+  },
+  "keywords": [
+    "cooklang",
+    "serverless",
+    "aws",
+    "lambda",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.490.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.490.0",
+    "jose": "^5.2.0",
+    "nanoid": "^5.0.4",
+    "busboy": "^1.6.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "preset": "default",
+    "testEnvironment": "node",
+    "transform": {},
+    "extensionsToTreatAsEsm": [".js"],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "globals": {
+      "NODE_OPTIONS": "--experimental-vm-modules"
+    }
+  }
+}
+
